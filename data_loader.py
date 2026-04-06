@@ -64,7 +64,6 @@ def load_job_data(data_path: str, sample_size: int = None) -> pd.DataFrame:
         df = df.sample(n=sample_size, random_state=42)
 
     df = df.reset_index(drop=True)
-    print(f"Loaded {len(df)} job postings from {data_path}")
     return df
 
 

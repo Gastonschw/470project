@@ -29,7 +29,6 @@ class TFIDFRanker:
     def fit(self, job_descriptions: list[str]):
         """Fit TF-IDF vectorizer on job descriptions."""
         self.job_vectors = self.vectorizer.fit_transform(job_descriptions)
-        print(f"TF-IDF fitted: {self.job_vectors.shape[0]} docs, {self.job_vectors.shape[1]} features")
 
     def rank(self, resume_text: str, top_k: int = 10) -> list[tuple[int, float]]:
         """
@@ -61,14 +60,12 @@ class SemanticRanker:
 
     def fit(self, job_descriptions: list[str], batch_size: int = 64):
         """Compute embeddings for all job descriptions."""
-        print(f"Computing embeddings for {len(job_descriptions)} job descriptions...")
         self.job_embeddings = self.model.encode(
             job_descriptions,
             batch_size=batch_size,
-            show_progress_bar=True,
+            show_progress_bar=False,
             normalize_embeddings=True,
         )
-        print(f"Semantic embeddings computed: shape {self.job_embeddings.shape}")
 
     def rank(self, resume_text: str, top_k: int = 10) -> list[tuple[int, float]]:
         """
