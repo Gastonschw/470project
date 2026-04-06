@@ -5,24 +5,28 @@ End-to-end test of the ResuRank AI core algorithm.
 Demonstrates:
   1. Loading and preprocessing job postings
   2. Parsing a sample resume
-  3. Ranking jobs with TF-IDF, Semantic, and Hybrid rankers
+  3. Ranking jobs with the Hybrid ranker (TF-IDF + Semantic)
   4. Extracting skills and identifying skill gaps
-  5. Evaluating with precision@k metrics
 
 Usage:
-    python test_core.py --data <path_to_csv> --resume <path_to_resume>
-    python test_core.py --data <path_to_csv> --demo   (uses built-in sample resume)
+    python test_core.py --data <path_to_ldjson> --resume <path_to_resume>
+    python test_core.py --data <path_to_ldjson> --demo   (uses built-in sample resume)
 """
 
 import argparse
+import os
 import sys
 import time
+import warnings
+
+# Suppress HF Hub download warnings
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+warnings.filterwarnings("ignore", message=".*unauthenticated.*HF Hub.*")
 
 from data_loader import load_job_data, clean_text
 from resume_parser import parse_resume
-from ranker import TFIDFRanker, SemanticRanker, HybridRanker
+from ranker import HybridRanker
 from skill_extractor import extract_skills, analyze_skill_gap
-from evaluation import evaluate_ranker
 
 # Sample resume for demo/testing purposes
 SAMPLE_RESUME = """
@@ -61,9 +65,9 @@ def print_divider(title: str):
     print(f"{'='*60}\n")
 
 
-def display_results(results, df, resume_text, ranker_name):
+def display_results(results, df, resume_text):
     """Display ranked job results with skill gap analysis."""
-    print(f"\nTop 5 matches ({ranker_name}):")
+    print(f"\nTop 5 matches (Hybrid):")
     print("-" * 50)
 
     # Determine title column
@@ -76,13 +80,8 @@ def display_results(results, df, resume_text, ranker_name):
     resume_skills = extract_skills(resume_text)
 
     for i, result in enumerate(results[:5]):
-        if isinstance(result, dict):
-            idx = result["job_index"]
-            score = result["final_score"]
-            extra = f" (TF-IDF: {result['tfidf_score']:.3f}, Semantic: {result['semantic_score']:.3f})"
-        else:
-            idx, score = result
-            extra = ""
+        idx = result["job_index"]
+        score = result["final_score"]
 
         title = df.iloc[idx][title_col] if title_col else "N/A"
         desc_preview = df.iloc[idx]["job_description_clean"][:100]
@@ -91,7 +90,7 @@ def display_results(results, df, resume_text, ranker_name):
         job_skills = extract_skills(df.iloc[idx]["job_description_clean"])
         gap = analyze_skill_gap(resume_skills, job_skills)
 
-        print(f"\n  #{i+1} [Score: {score:.4f}]{extra}")
+        print(f"\n  #{i+1} [Score: {score:.4f}] (TF-IDF: {result['tfidf_score']:.3f}, Semantic: {result['semantic_score']:.3f})")
         print(f"  Title: {title}")
         print(f"  Description: {desc_preview}...")
         print(f"  Skill Match: {gap['match_percentage']}% ({len(gap['matching_skills'])}/{gap['job_skill_count']})")
@@ -103,11 +102,11 @@ def display_results(results, df, resume_text, ranker_name):
 
 def main():
     parser = argparse.ArgumentParser(description="ResuRank AI - Core Algorithm Test")
-    parser.add_argument("--data", required=True, help="Path to CareerBuilder CSV file")
+    parser.add_argument("--data", required=True, help="Path to CareerBuilder LDJSON file")
     parser.add_argument("--resume", help="Path to resume file (PDF or DOCX)")
     parser.add_argument("--demo", action="store_true", help="Use built-in sample resume")
     parser.add_argument("--sample", type=int, default=500,
-                        help="Number of job postings to sample for faster testing (default: 500)")
+                        help="Number of job postings to sample (default: 500)")
     parser.add_argument("--top-k", type=int, default=10,
                         help="Number of top results to return (default: 10)")
     parser.add_argument("--alpha", type=float, default=0.5,
@@ -139,47 +138,22 @@ def main():
     df = load_job_data(args.data, sample_size=args.sample)
     descriptions = df["job_description_clean"].tolist()
 
-    # ---- TF-IDF Ranking ----
-    print_divider("4. TF-IDF Ranking (Lexical Baseline)")
-    t0 = time.time()
-    tfidf_ranker = TFIDFRanker()
-    tfidf_ranker.fit(descriptions)
-    tfidf_results = tfidf_ranker.rank(resume_clean, top_k=args.top_k)
-    tfidf_time = time.time() - t0
-    print(f"TF-IDF ranking completed in {tfidf_time:.2f}s")
-    display_results(tfidf_results, df, resume_text, "TF-IDF")
-
-    # ---- Semantic Ranking ----
-    print_divider("5. Semantic Ranking (Sentence Transformers)")
-    t0 = time.time()
-    semantic_ranker = SemanticRanker()
-    semantic_ranker.fit(descriptions)
-    semantic_results = semantic_ranker.rank(resume_clean, top_k=args.top_k)
-    semantic_time = time.time() - t0
-    print(f"Semantic ranking completed in {semantic_time:.2f}s")
-    display_results(semantic_results, df, resume_text, "Semantic")
-
     # ---- Hybrid Ranking ----
-    print_divider("6. Hybrid Ranking (TF-IDF + Semantic)")
+    print_divider("4. Hybrid Ranking (TF-IDF + Semantic)")
     t0 = time.time()
     hybrid_ranker = HybridRanker(alpha=args.alpha)
     hybrid_ranker.fit(descriptions)
     hybrid_results = hybrid_ranker.rank(resume_clean, top_k=args.top_k)
     hybrid_time = time.time() - t0
     print(f"Hybrid ranking (alpha={args.alpha}) completed in {hybrid_time:.2f}s")
-    display_results(hybrid_results, df, resume_text, "Hybrid")
+    display_results(hybrid_results, df, resume_text)
 
-    # ---- Evaluation Summary ----
-    print_divider("7. Summary")
+    # ---- Summary ----
+    print_divider("5. Summary")
     print(f"Dataset:      {len(df)} job postings")
     print(f"Resume:       {len(resume_skills)} skills extracted")
-    print(f"TF-IDF time:  {tfidf_time:.2f}s")
-    print(f"Semantic time: {semantic_time:.2f}s")
-    print(f"Hybrid time:  {hybrid_time:.2f}s")
+    print(f"Ranking time: {hybrid_time:.2f}s")
     print(f"Alpha:        {args.alpha}")
-    print(f"\nNote: For precision@k evaluation, generate ground truth labels")
-    print(f"using evaluation.py's create_eval_dataset_template() function.")
-    print(f"See README.md for instructions.")
 
 
 if __name__ == "__main__":
