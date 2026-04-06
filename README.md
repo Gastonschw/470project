@@ -11,7 +11,7 @@ cd resurank-ai
 pip install -r requirements.txt
 ```
 
-Place the CareerBuilder LDJSON dataset in the parent directory (`470proj/`).
+Download the [CareerBuilder Job Listing 2020 dataset](https://www.kaggle.com/datasets/promptcloud/careerbuilder-job-listing-2020/data) from Kaggle and place the LDJSON file in the parent directory (`470proj/`).
 
 ## How to Run
 
