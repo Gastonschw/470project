@@ -97,21 +97,27 @@ class HybridRanker:
     """
 
     def __init__(self, alpha: float = 0.5, max_features: int = 10000,
-                 semantic_model: str = "all-MiniLM-L6-v2"):
+                 semantic_model: str = "all-MiniLM-L6-v2",
+                 tfidf_ranker: TFIDFRanker = None,
+                 semantic_ranker: SemanticRanker = None):
         """
         Args:
             alpha: Weight for TF-IDF score (0.0 = pure semantic, 1.0 = pure TF-IDF).
             max_features: Max features for TF-IDF vectorizer.
             semantic_model: Sentence transformer model name.
+            tfidf_ranker: Optional pre-fitted TFIDFRanker to reuse.
+            semantic_ranker: Optional pre-fitted SemanticRanker to reuse.
         """
         self.alpha = alpha
-        self.tfidf_ranker = TFIDFRanker(max_features=max_features)
-        self.semantic_ranker = SemanticRanker(model_name=semantic_model)
+        self.tfidf_ranker = tfidf_ranker or TFIDFRanker(max_features=max_features)
+        self.semantic_ranker = semantic_ranker or SemanticRanker(model_name=semantic_model)
 
     def fit(self, job_descriptions: list[str]):
-        """Fit both rankers on job descriptions."""
-        self.tfidf_ranker.fit(job_descriptions)
-        self.semantic_ranker.fit(job_descriptions)
+        """Fit both rankers on job descriptions (skips if already fitted)."""
+        if self.tfidf_ranker.job_vectors is None:
+            self.tfidf_ranker.fit(job_descriptions)
+        if self.semantic_ranker.job_embeddings is None:
+            self.semantic_ranker.fit(job_descriptions)
 
     def rank(self, resume_text: str, top_k: int = 10) -> list[dict]:
         """

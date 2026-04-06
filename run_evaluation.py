@@ -63,7 +63,7 @@ tfidf.fit(descriptions)
 semantic = SemanticRanker()
 semantic.fit(descriptions)
 
-hybrid = HybridRanker()
+hybrid = HybridRanker(tfidf_ranker=tfidf, semantic_ranker=semantic)
 hybrid.fit(descriptions)
 
 rankers = {"TF-IDF": tfidf, "Semantic": semantic, "Hybrid": hybrid}
