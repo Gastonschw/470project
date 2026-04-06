@@ -19,9 +19,9 @@ from evaluation import load_eval_labels, evaluate_ranker
 DATA_PATH = "../marketing_sample_for_careerbuilder_usa-careerbuilder_job_listing__20200401_20200630__30k_data.ldjson"
 
 RESUMES = {
-    "cody":      "../Cody_Fredrickson_Resume (2).docx",
-    "malik":     "../Malik_Rabb_Resume (1).docx",
-    "sriharsha": "../Jandhyala_Sriharsha_1b.pdf",
+    "cody":      "Cody_Fredrickson_Resume.docx",
+    "malik":     "Malik_Rabb_Resume.docx",
+    "sriharsha": "Jandhyala_Sriharsha_1b.pdf",
 }
 
 EVAL_FILES = {
