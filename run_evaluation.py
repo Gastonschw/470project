@@ -16,7 +16,7 @@ from ranker import TFIDFRanker, SemanticRanker, HybridRanker
 from evaluation import load_eval_labels, evaluate_ranker
 
 # ── Paths ────────────────────────────────────────────────────────────────
-DATA_PATH = "../marketing_sample_for_careerbuilder_usa-careerbuilder_job_listing__20200401_20200630__30k_data.ldjson"
+DATA_PATH = "marketing_sample_for_careerbuilder_usa-careerbuilder_job_listing__20200401_20200630__30k_data.ldjson"
 
 RESUMES = {
     "cody":      "Cody_Fredrickson_Resume.docx",
@@ -32,8 +32,7 @@ EVAL_FILES = {
 
 K_VALUES = [5, 10]
 
-# ── Step 1: Load eval labels & collect all needed job indices ────────────
-print("Loading eval labels...")
+# ── Load eval labels & collect all needed job indices ────────────────────
 eval_labels = {}
 relevant_sets = {}
 all_eval_indices = set()
@@ -44,10 +43,7 @@ for name, path in EVAL_FILES.items():
     relevant_sets[name] = {idx for idx, rel in labels.items() if rel}
     all_eval_indices.update(labels.keys())
 
-print(f"  {len(all_eval_indices)} unique job indices across all eval sets")
-
-# ── Step 2: Load job data, subset to eval indices only ───────────────────
-print("Loading job data...")
+# ── Load job data, subset to eval indices only ───────────────────────────
 df = load_job_data(DATA_PATH)
 
 eval_indices_sorted = sorted(all_eval_indices)
@@ -57,14 +53,10 @@ descriptions = df_subset["job_description_clean"].tolist()
 # Mapping: position in subset list -> original job index
 pos_to_orig = {pos: orig_idx for pos, orig_idx in enumerate(eval_indices_sorted)}
 
-print(f"  Subset: {len(descriptions)} job descriptions for evaluation")
-
-# ── Step 3: Parse resumes ────────────────────────────────────────────────
-print("Parsing resumes...")
+# ── Parse resumes ────────────────────────────────────────────────────────
 resume_texts = {name: parse_resume(path) for name, path in RESUMES.items()}
 
-# ── Step 4: Fit rankers on subset (once) ─────────────────────────────────
-print("Fitting rankers...")
+# ── Fit rankers on subset (once) ─────────────────────────────────────────
 tfidf = TFIDFRanker()
 tfidf.fit(descriptions)
 
@@ -76,8 +68,7 @@ hybrid.fit(descriptions)
 
 rankers = {"TF-IDF": tfidf, "Semantic": semantic, "Hybrid": hybrid}
 
-# ── Step 5: Rank & evaluate ──────────────────────────────────────────────
-print("Ranking and evaluating...\n")
+# ── Rank & evaluate ──────────────────────────────────────────────────────
 results = []
 
 for resume_name, resume_text in resume_texts.items():
