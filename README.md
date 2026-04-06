@@ -1,6 +1,6 @@
 # ResuRank AI
 
-AI-powered resume-to-job ranking system for CSCE 470. Takes a resume and ranks ~30k job postings by relevance using three strategies: TF-IDF, Semantic (sentence-transformers), and a Hybrid blend of both.
+Resume-to-job ranking system for CSCE 470. Takes a resume and ranks ~30k job postings by relevance using three strategies: TF-IDF, Semantic (sentence-transformers), and a Hybrid blend of both.
 
 ## Setup
 
