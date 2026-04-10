@@ -4,3 +4,5 @@ numpy
 sentence-transformers
 PyPDF2
 python-docx
+streamlit
+plotly
