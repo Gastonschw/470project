@@ -10,41 +10,44 @@ import re
 
 # Common technical and professional skills taxonomy
 # Expand this list based on your dataset's domain
-SKILL_TAXONOMY = {
-    # Programming languages
-    "python", "java", "javascript", "typescript", "c++", "c#", "ruby", "php",
-    "swift", "kotlin", "go", "rust", "scala", "r", "matlab", "sql", "html",
-    "css", "bash", "shell", "perl",
-
-    # Frameworks & libraries
-    "react", "angular", "vue", "django", "flask", "spring", "node.js", "express",
-    "rails", "laravel", ".net", "tensorflow", "pytorch", "keras", "pandas",
-    "numpy", "scikit-learn", "jquery", "bootstrap", "tailwind",
-
-    # Tools & platforms
-    "git", "github", "docker", "kubernetes", "aws", "azure", "gcp",
-    "jenkins", "terraform", "ansible", "linux", "windows", "jira", "confluence",
-    "tableau", "power bi", "excel", "salesforce", "sap",
-
-    # Data & databases
-    "mysql", "postgresql", "mongodb", "redis", "elasticsearch", "dynamodb",
-    "sqlite", "oracle", "sql server", "hadoop", "spark", "kafka", "airflow",
-
-    # Concepts & methodologies
-    "machine learning", "deep learning", "natural language processing",
-    "computer vision", "data analysis", "data science", "data engineering",
-    "devops", "ci/cd", "agile", "scrum", "rest api", "microservices",
-    "object-oriented", "test-driven", "cloud computing",
-
-    # Soft skills & business
-    "project management", "leadership", "communication", "problem solving",
-    "teamwork", "critical thinking", "time management", "customer service",
-    "sales", "marketing", "accounting", "financial analysis", "budgeting",
-
-    # Certifications & standards
-    "pmp", "aws certified", "azure certified", "cissp", "comptia",
-    "six sigma", "lean", "itil",
+SKILL_CATEGORIES = {
+    "Languages": {
+        "python", "java", "javascript", "typescript", "c++", "c#", "ruby", "php",
+        "swift", "kotlin", "go", "rust", "scala", "r", "matlab", "sql", "html",
+        "css", "bash", "shell", "perl",
+    },
+    "Frameworks": {
+        "react", "angular", "vue", "django", "flask", "spring", "node.js", "express",
+        "rails", "laravel", ".net", "tensorflow", "pytorch", "keras", "pandas",
+        "numpy", "scikit-learn", "jquery", "bootstrap", "tailwind",
+    },
+    "Tools & Platforms": {
+        "git", "github", "docker", "kubernetes", "aws", "azure", "gcp",
+        "jenkins", "terraform", "ansible", "linux", "windows", "jira", "confluence",
+        "tableau", "power bi", "excel", "salesforce", "sap",
+    },
+    "Data & Databases": {
+        "mysql", "postgresql", "mongodb", "redis", "elasticsearch", "dynamodb",
+        "sqlite", "oracle", "sql server", "hadoop", "spark", "kafka", "airflow",
+    },
+    "Concepts": {
+        "machine learning", "deep learning", "natural language processing",
+        "computer vision", "data analysis", "data science", "data engineering",
+        "devops", "ci/cd", "agile", "scrum", "rest api", "microservices",
+        "object-oriented", "test-driven", "cloud computing",
+    },
+    "Soft Skills": {
+        "project management", "leadership", "communication", "problem solving",
+        "teamwork", "critical thinking", "time management", "customer service",
+        "sales", "marketing", "accounting", "financial analysis", "budgeting",
+    },
+    "Certifications": {
+        "pmp", "aws certified", "azure certified", "cissp", "comptia",
+        "six sigma", "lean", "itil",
+    },
 }
+
+SKILL_TAXONOMY = set().union(*SKILL_CATEGORIES.values())
 
 
 def extract_skills(text: str, taxonomy: set = None) -> set[str]:
